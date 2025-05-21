@@ -4,17 +4,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "MetarouterFramework",
+    name: "MetaRouterFramework",
+    platforms: [
+         .iOS(.v13), // Specify minimum iOS 13.0
+     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "MetarouterFramework",
-            targets: ["metarouterlib"]),
+            name: "MetaRouterFramework",
+            targets: ["MetaRouterFramework"]),
     ],
+    dependencies: [.package(url: "git@github.com:segmentio/analytics-swift.git", .upToNextMajor(from: "1.7.3")),],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .binaryTarget(name: "metarouterlib", path: "./Sources/metarouterlib.xcframework")
-
-    ]
+          .target(
+              name: "MetaRouterFramework",
+              dependencies: [
+                         .product(name: "Segment", package: "analytics-swift")
+                     ])
+      ]
 )
