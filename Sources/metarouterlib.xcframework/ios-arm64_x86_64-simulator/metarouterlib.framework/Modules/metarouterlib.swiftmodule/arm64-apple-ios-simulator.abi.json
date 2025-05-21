@@ -1,0 +1,84 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "metarouterlib",
+    "printedName": "metarouterlib",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "metarouterlib",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "MetaRouterLib",
+        "printedName": "MetaRouterLib",
+        "children": [
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(writeKey:clusterHost:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "MetaRouterLib",
+                "printedName": "metarouterlib.MetaRouterLib",
+                "usr": "s:13metarouterlib13MetaRouterLibC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:13metarouterlib13MetaRouterLibC8writeKey11clusterHostACSS_SStcfc",
+            "mangledName": "$s13metarouterlib13MetaRouterLibC8writeKey11clusterHostACSS_SStcfc",
+            "moduleName": "metarouterlib",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:13metarouterlib13MetaRouterLibC",
+        "mangledName": "$s13metarouterlib13MetaRouterLibC",
+        "moduleName": "metarouterlib",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": []
+}
