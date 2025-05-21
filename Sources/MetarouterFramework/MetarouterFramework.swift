@@ -10,8 +10,8 @@ public class MetaRouterFramework {
     private let analytics: Analytics
     
     public init(writeKey: String, clusterHost: String) {
+        DirectURLSessionSwizzler.setupSegmentBlocking()
         
-        SegmentBlockerURLProtocol.register()
         
         let configuration = Configuration(writeKey: writeKey)
             .trackApplicationLifecycleEvents(true)
