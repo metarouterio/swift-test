@@ -1,9 +1,3 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-
-//
-//  metarouterlib.swift
-//  metarouterlib
 //
 //  Created by Christopher Houdlette on 5/21/25.
 //
@@ -16,6 +10,9 @@ public class MetaRouterFramework {
     private let analytics: Analytics
     
     public init(writeKey: String, clusterHost: String) {
+        
+        SegmentBlockerURLProtocol.register()
+        
         let configuration = Configuration(writeKey: writeKey)
             .trackApplicationLifecycleEvents(true)
             .flushInterval(10)
