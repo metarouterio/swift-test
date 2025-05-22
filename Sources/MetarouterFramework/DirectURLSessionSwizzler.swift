@@ -1,9 +1,48 @@
 import Foundation
 
 class DirectURLSessionSwizzler {
+    // Control flags
+    nonisolated(unsafe) static var isBlockingEnabled = false
+    nonisolated(unsafe) static var blockOnlyNextRequest = false
+    nonisolated(unsafe) static var blockedDomains: Set<String> = ["cdn-settings.segment.com"]
+    nonisolated(unsafe) static var isSwizzled = false
+    
     static func setupSegmentBlocking() {
+        guard !isSwizzled else { return } // Prevent double-swizzling
         swizzleDataTaskWithRequest()
         swizzleDataTaskWithURL()
+        isSwizzled = true
+    }
+    
+    // Enable blocking for all requests
+    static func enableBlocking() {
+        isBlockingEnabled = true
+        blockOnlyNextRequest = false
+    }
+    
+    // Disable all blocking
+    static func disableBlocking() {
+        isBlockingEnabled = false
+        blockOnlyNextRequest = false
+    }
+    
+    // Block only the next request to blocked domains
+    static func blockNextRequest() {
+        // Auto-setup if not already done
+        if !isSwizzled {
+            setupSegmentBlocking()
+        }
+        blockOnlyNextRequest = true
+        isBlockingEnabled = true
+    }
+    
+    // Add/remove domains dynamically
+    static func addBlockedDomain(_ domain: String) {
+        blockedDomains.insert(domain)
+    }
+    
+    static func removeBlockedDomain(_ domain: String) {
+        blockedDomains.remove(domain)
     }
     
     private static func swizzleDataTaskWithRequest() {
@@ -36,14 +75,18 @@ extension URLSession {
         if shouldBlockRequest(request) {
             print("🚫 Blocked network request to: \(request.url?.absoluteString ?? "unknown")")
             
+            // If we're only blocking next request, disable blocking after this one
+            if DirectURLSessionSwizzler.blockOnlyNextRequest {
+                DirectURLSessionSwizzler.isBlockingEnabled = false
+                DirectURLSessionSwizzler.blockOnlyNextRequest = false
+            }
+            
             // Return a cancelled task that never executes
-            let dummyRequest = URLRequest(url: URL(string: "data:,")!) // Data URL that resolves immediately
+            let dummyRequest = URLRequest(url: URL(string: "data:,")!)
             let task = self.swizzled_dataTaskWithRequest(with: dummyRequest) { _, _, _ in }
             
-            // Immediately cancel the task so it never executes
             task.cancel()
             
-            // Call completion handler with error after a short delay to simulate network behavior
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.001) {
                 let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled, userInfo: [
                     NSLocalizedDescriptionKey: "Request blocked by DirectURLSessionSwizzler"
@@ -54,26 +97,27 @@ extension URLSession {
             return task
         }
         
-        // For non-blocked requests, proceed normally
         return self.swizzled_dataTaskWithRequest(with: request, completionHandler: completionHandler)
     }
     
     @objc func swizzled_dataTaskWithURL(with url: URL, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         
-        // Create a request to check if it should be blocked
         let request = URLRequest(url: url)
         
         if shouldBlockRequest(request) {
             print("🚫 Blocked network request to: \(url.absoluteString)")
             
-            // Return a cancelled task that never executes
-            let dummyURL = URL(string: "data:,")! // Data URL that resolves immediately
+            // If we're only blocking next request, disable blocking after this one
+            if DirectURLSessionSwizzler.blockOnlyNextRequest {
+                DirectURLSessionSwizzler.isBlockingEnabled = false
+                DirectURLSessionSwizzler.blockOnlyNextRequest = false
+            }
+            
+            let dummyURL = URL(string: "data:,")!
             let task = self.swizzled_dataTaskWithURL(with: dummyURL) { _, _, _ in }
             
-            // Immediately cancel the task
             task.cancel()
             
-            // Call completion handler with error
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.001) {
                 let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled, userInfo: [
                     NSLocalizedDescriptionKey: "Request blocked by DirectURLSessionSwizzler"
@@ -84,15 +128,31 @@ extension URLSession {
             return task
         }
         
-        // For non-blocked requests, proceed normally
         return self.swizzled_dataTaskWithURL(with: url, completionHandler: completionHandler)
     }
     
     private func shouldBlockRequest(_ request: URLRequest) -> Bool {
+        // First check if blocking is enabled
+        guard DirectURLSessionSwizzler.isBlockingEnabled else { return false }
+        
         guard let url = request.url,
               let host = url.host else { return false }
         
-        let blockedDomains = ["cdn-settings.segment.com"]
-        return blockedDomains.contains { host.contains($0) }
+        return DirectURLSessionSwizzler.blockedDomains.contains { host.contains($0) }
     }
 }
+
+// MARK: - Usage Examples
+/*
+// Simple usage - just call this before making a request you want to block:
+DirectURLSessionSwizzler.blockNextRequest()
+// The swizzling will be automatically set up on first use
+
+// Or you can still manually setup if you prefer:
+DirectURLSessionSwizzler.setupSegmentBlocking()
+
+// Other options still available:
+DirectURLSessionSwizzler.enableBlocking()
+DirectURLSessionSwizzler.disableBlocking()
+DirectURLSessionSwizzler.addBlockedDomain("another-domain.com")
+*/
